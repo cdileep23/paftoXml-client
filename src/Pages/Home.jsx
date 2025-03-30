@@ -6,12 +6,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import axios from 'axios';
 import { BASE_URL } from '@/util/url';
+import XmlViewer from './XMLDisplay';
 
 const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileObjectURL, setFileObjectURL] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const[xml,setXml]=useState(null)
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -59,6 +61,7 @@ const Home = () => {
       );
   
       toast.success('File uploaded successfully!', { id: toastId });
+      setXml(response.data.code)
       console.log('Conversion result:', response.data);
       
       // Reset form after successful upload
@@ -149,6 +152,11 @@ const Home = () => {
           </Button>
         </div>
       </div>
+      {
+        xml &&<div>
+          {xml}
+          </div>
+      }
     </div>
   );
 };
