@@ -4,6 +4,7 @@ import Body from './components/Body'
 import Home from './Pages/Home'
 import Auth from './Pages/Auth'
 import { Toaster } from './components/ui/sonner'
+import Conversion from './Pages/Conversion'
 
 const appRouter=createBrowserRouter([{
   path:"/",
@@ -12,8 +13,11 @@ const appRouter=createBrowserRouter([{
     path:"/",
     element:<Home/>
   },{
-    path:"auth",
+    path:"/auth",
     element:<Auth/>
+  },{
+    path:"/my-conversion",
+    element:<Conversion/>
   }]
 }])
 

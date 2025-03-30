@@ -1,43 +1,85 @@
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { FileText, X,ArrowRight } from "lucide-react";
+import { FileText, X, ArrowRight, Code } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Code } from "lucide-react";
+import { toast } from 'sonner';
+import axios from 'axios';
+import { BASE_URL } from '@/util/url';
 
 const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileObjectURL, setFileObjectURL] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      // Store the file in state
+    if (!file) return;
+
+    // Clean up previous file URL if exists
+    if (fileObjectURL) {
+      URL.revokeObjectURL(fileObjectURL);
+    }
+
+    if (file.type === 'application/pdf') {
       setSelectedFile(file);
-      
-      // Create a blob URL for the preview
       const objectURL = URL.createObjectURL(file);
       setFileObjectURL(objectURL);
-    } else if (file) {
-      alert('Please select a PDF file');
-      // Reset the file input
+    } else {
+      toast.error('Please select a PDF file');
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     }
   };
 
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error('Please upload a file first');
+      return;
+    }
+  
+    setIsLoading(true);
+    const toastId = toast.loading('Uploading file...');
+    
+    try {
+      const formData = new FormData();
+      formData.append('pdfFile', selectedFile);
+  
+      const response = await axios.post(
+        `${BASE_URL}/conversion/create-conversion`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+  
+      toast.success('File uploaded successfully!', { id: toastId });
+      console.log('Conversion result:', response.data);
+      
+      // Reset form after successful upload
+      clearSelectedFile();
+    } catch (error) {
+      console.error('Upload failed:', error);
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Upload failed';
+      toast.error(`Upload failed: ${errorMessage}`, { id: toastId });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearSelectedFile = () => {
     setSelectedFile(null);
-    
-    // Clean up the blob URL to avoid memory leaks
     if (fileObjectURL) {
       URL.revokeObjectURL(fileObjectURL);
       setFileObjectURL(null);
     }
-    
-    // Reset the file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -46,11 +88,10 @@ const Home = () => {
   return (
     <div className="container mx-auto px-4">
       <HeroSection/>
-      <div className='mt-8 mb-8'>
+      <div className='mt-8 mb-8 flex flex-col justify-center items-center space-y-5'>
         <h1 className='text-xl sm:text-2xl font-bold mb-4'>Try Out Now</h1>
         
-        {/* Main container - simplified to just the upload section */}
-        <div className='w-full max-w-lg'>
+        <div className='w-full max-w-lg mb-4'>
           <div className='relative bg-white rounded-lg border p-4'>
             <label className="block text-sm font-medium mb-2">Upload PDF Document</label>
             <Input 
@@ -65,7 +106,6 @@ const Home = () => {
               <div className='mt-3 flex items-center text-sm bg-gray-50 p-2 rounded'>
                 <FileText className='h-4 w-4 mr-2 text-blue-500 flex-shrink-0' />
                 
-                {/* Dialog (popup) trigger wrapped around the filename */}
                 <Dialog>
                   <DialogTrigger asChild>
                     <button className='truncate text-left hover:underline text-blue-600'>
@@ -73,17 +113,17 @@ const Home = () => {
                     </button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
-  <DialogHeader>
-    <DialogTitle>PDF Preview: {selectedFile.name}</DialogTitle>
-  </DialogHeader>
-  <div className='flex-1 min-h-0'> {/* This makes the container grow but not overflow */}
-    <iframe 
-      src={fileObjectURL} 
-      className='w-full h-full'
-      title="PDF Preview"
-    />
-  </div>
-</DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>PDF Preview: {selectedFile.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className='flex-1 min-h-0'>
+                      <iframe 
+                        src={fileObjectURL} 
+                        className='w-full h-full'
+                        title="PDF Preview"
+                      />
+                    </div>
+                  </DialogContent>
                 </Dialog>
                 
                 <Button 
@@ -98,6 +138,16 @@ const Home = () => {
             )}
           </div>
         </div>
+
+        <div>
+          <Button 
+            onClick={handleUpload} 
+            variant='outline'
+            disabled={isLoading }
+          >
+            {isLoading ? 'Processing...' : 'Generate'}
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -108,26 +158,21 @@ export default Home;
 const HeroSection = () => {
   return (
     <div className="relative overflow-hidden bg-white">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 opacity-80"></div>
       
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="py-12 md:py-20 lg:py-24">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8 items-center">
-            {/* Content */}
             <div className="text-center lg:text-left">
               <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
                 <span className="block">Transform Your PDFs</span>
-                <span className="block text-blue-600">
-                  to Structured XML
-                </span>
+                <span className="block text-blue-600">to Structured XML</span>
               </h1>
               <p className="mt-6 text-lg text-gray-600 max-w-3xl">
                 Preserve document structure and formatting while converting your PDF files 
                 to XML format. Our intelligent conversion tool maintains headers, paragraphs, 
                 tables, and styling - giving you structured data you can work with.
               </p>
-              
               
               <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
                 <div className="flex items-center gap-2">
@@ -151,10 +196,8 @@ const HeroSection = () => {
               </div>
             </div>
             
-            {/* Visual */}
             <div className="relative flex justify-center">
               <div className="relative w-full max-w-lg">
-               
                 <div className="relative">
                   <div className="absolute -left-4 top-0 h-72 w-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
                   <div className="absolute left-20 top-0 h-72 w-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
@@ -211,4 +254,3 @@ const HeroSection = () => {
     </div>
   );
 };
-  

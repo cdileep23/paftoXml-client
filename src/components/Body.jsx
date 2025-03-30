@@ -1,12 +1,8 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-
-
-
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-
 import { BASE_URL } from "@/util/url";
 import { userLoggedIn } from "@/store/userSlice";
 
@@ -23,9 +19,15 @@ const Body = () => {
       const response = await axios.get(`${BASE_URL}/user/profile`, {
         withCredentials: true,
       });
+      console.log(response);
       dispatch(userLoggedIn(response.data.user));
+      
+     
+      if (isAuthRoute) {
+        navigate("/");
+      }
     } catch (error) {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401 && !isAuthRoute) {
         navigate("/auth");
       }
     }
@@ -43,7 +45,6 @@ const Body = () => {
           <Outlet />
         </div>
       </main>
-      
     </div>
   );
 };
