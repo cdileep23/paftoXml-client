@@ -6,12 +6,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import axios from 'axios';
 import { BASE_URL } from '@/util/url';
-import XmlViewer from './XMLDisplay';
+import XmlViewer from './PDFXMLViewer';
+import PDFXMLViewer from './PDFXMLViewer';
 
 const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileObjectURL, setFileObjectURL] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversionObj,setConversion]=useState(null)
   const fileInputRef = useRef(null);
   const[xml,setXml]=useState(null)
 
@@ -63,6 +65,7 @@ const Home = () => {
       toast.success('File uploaded successfully!', { id: toastId });
       setXml(response.data.code)
       console.log('Conversion result:', response.data);
+      setConversion(response.data.conversion)
       
       // Reset form after successful upload
       clearSelectedFile();
@@ -153,10 +156,8 @@ const Home = () => {
         </div>
       </div>
       {
-        xml &&<div>
-          {xml}
-          </div>
-      }
+        conversionObj &&<PDFXMLViewer fileName={conversionObj.originalFilename
+} pdfUrl={conversionObj.pdfLink} xmlCode={conversionObj.xmlContent} />}
     </div>
   );
 };
