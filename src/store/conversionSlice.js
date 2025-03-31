@@ -9,11 +9,14 @@ const conversionSlice=createSlice({
         },
         resetConversions:(state)=>{
             return null;
-        }
+        },
+        addConversion: (state, action) => {
+            state.conversions.unshift(action.payload); // Add new conversion at the beginning
+          },
        
     }
 
 })
 
-export const{setAllConversions,resetConversions}=conversionSlice.actions
+export const{setAllConversions,resetConversions,addConversion}=conversionSlice.actions
 export default conversionSlice.reducer

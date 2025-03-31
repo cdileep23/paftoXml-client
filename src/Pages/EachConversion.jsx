@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BASE_URL } from '@/util/url';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Download, File, Clock, User, FileText } from 'lucide-react';
+import { ArrowLeft, Calendar, File, FileText } from 'lucide-react';
 import PDFXMLViewer from './PDFXMLViewer';
 
 const EachConversion = () => {

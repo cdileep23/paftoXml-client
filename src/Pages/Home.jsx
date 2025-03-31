@@ -8,6 +8,8 @@ import axios from 'axios';
 import { BASE_URL } from '@/util/url';
 import XmlViewer from './PDFXMLViewer';
 import PDFXMLViewer from './PDFXMLViewer';
+import { useDispatch } from 'react-redux';
+import {  resetConversions } from '@/store/conversionSlice';
 
 const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -15,6 +17,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversionObj,setConversion]=useState(null)
   const fileInputRef = useRef(null);
+  const dispatch=useDispatch()
   
 
   const handleFileChange = (e) => {
@@ -45,6 +48,7 @@ const Home = () => {
     }
   
     setIsLoading(true);
+    setConversion(null)
     const toastId = toast.loading('Uploading file...');
     
     try {
@@ -65,7 +69,10 @@ const Home = () => {
       toast.success('File uploaded successfully!', { id: toastId });
      
       console.log('Conversion result:', response.data);
-      setConversion(response.data.conversion)
+      dispatch(resetConversions());
+      setConversion(response.data.conversion)      
+
+
       
       // Reset form after successful upload
       clearSelectedFile();
