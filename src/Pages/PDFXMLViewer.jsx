@@ -1,88 +1,28 @@
-import React, { useState } from 'react';
-import { Copy, Download, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Copy, Download, Check, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import XMLViewer from 'react-xml-viewer';
 
 const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('pdf'); // For mobile view tab switching
+  const [activeTab, setActiveTab] = useState('pdf');
+  const [pdfScale, setPdfScale] = useState(1);
+  const containerRef = useRef(null);
 
-  // Improved XML formatting function
-  const formatXML = (xml) => {
-    if (!xml) return '';
-    
-    try {
-      // Define a proper XML formatting function
-      const formatXmlString = (xmlStr) => {
-        const PADDING = ' '.repeat(2); // 2 spaces of padding
-        let formatted = '';
-        let indent = '';
-        
-        // Remove line breaks and extra spaces first to normalize the input
-        const normalized = xmlStr.replace(/>\s+</g, '><').trim();
-        
-        // Add newlines and proper indentation
-        normalized.split(/></).forEach(node => {
-          // Check if this is a closing tag or self-closing tag to adjust indentation
-          if (node.match(/^\/\w/)) {
-            // This is a closing tag, so reduce indent before adding the node
-            indent = indent.substring(PADDING.length);
-          }
-          
-          // Add the node with proper indentation
-          formatted += indent + '<' + node + '>\n';
-          
-          // If this is not a closing tag, a self-closing tag, or a declaration, increase indent
-          if (!node.match(/^\//) && !node.match(/\/\s*$/) && !node.match(/^\?/) && !node.match(/!--/)) {
-            indent += PADDING;
-          }
-        });
-        
-        // Clean up the result
-        return formatted
-          .replace(/(<([^>]+)>)\n\s*(<\/([^>]+)>)/g, '$1$3') // Put short content on one line
-          .replace(/^\s*</g, '<') // Remove spaces at the beginning of lines
-          .replace(/>\n/g, '>\n'); // Ensure consistent newlines
-      };
-      
-      // Try to parse and format the XML
-      return formatXmlString(xml);
-    } catch (e) {
-      console.error("XML formatting error:", e);
-      // If formatting fails, still try to add some basic formatting to prevent single line
-      return xml.replace(/></g, '>\n<')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-    }
+  // Custom XML theme for dark mode
+  const customTheme = {
+    attributeKeyColor: '#9CDCFE',
+    attributeValueColor: '#CE9178',
+    tagColor: '#569CD6',
+    textColor: '#D4D4D4',
+    backgroundColor: '#1E1E1E',
+    commentColor: '#6A9955',
+    separatorColor: '#808080',
+    declarationColor: '#808080',
+    processingInstructionColor: '#808080',
+    processingInstructionValueColor: '#CE9178'
   };
 
-  // Enhanced XML syntax highlighting with proper newline preservation
-  const enhancedXmlHighlighting = (formattedXml) => {
-    if (!formattedXml) return '';
-    
-    // Ensure we're working with escaped characters for HTML rendering
-    let sanitized = formattedXml
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-    
-    // Apply syntax highlighting
-    return sanitized
-      // Preserve newlines and spaces
-      .replace(/\n/g, '<br>')
-      .replace(/\s{2}/g, '&nbsp;&nbsp;')
-      // Handle comments
-      .replace(/(&lt;!--.*?--&gt;)/g, '<span style="color: #6A9955;">$1</span>')
-      // Handle doctype and declarations
-      .replace(/(&lt;\?.*?\?&gt;)/g, '<span style="color: #808080;">$1</span>')
-      // Handle attributes and their values
-      .replace(/\s([a-zA-Z0-9_-]+)=(&quot;)(.*?)(&quot;)/g, 
-               ' <span style="color: #9CDCFE;">$1</span>=<span style="color: #CE9178;">$2$3$4</span>')
-      // Handle tag names
-      .replace(/(&lt;\/?)([\w:-]+)/g, '$1<span style="color: #569CD6;">$2</span>');
-  };
-
-  // Handle copy to clipboard - ensure proper XML without HTML formatting
+  // Handle copy to clipboard
   const copyToClipboard = () => {
     navigator.clipboard.writeText(xmlCode).then(() => {
       setCopied(true);
@@ -101,12 +41,27 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
     document.body.removeChild(element);
   };
 
+  // Zoom in PDF
+  const zoomIn = () => {
+    setPdfScale(prev => Math.min(prev + 0.25, 3));
+  };
+
+  // Zoom out PDF
+  const zoomOut = () => {
+    setPdfScale(prev => Math.max(prev - 0.25, 0.5));
+  };
+
+  // Reset zoom
+  const resetZoom = () => {
+    setPdfScale(1);
+  };
+
   return (
-    <div className="w-full p-2 md:p-4 bg-gray-100">
+    <div className="w-full p-2 md:p-4 bg-gray-100" ref={containerRef}>
       <h2 className="text-xl font-bold mb-2 md:mb-4">Document Viewer</h2>
       
-      {/* Tab switcher for mobile view only */}
-      <div className="flex md:hidden mb-2 border-b">
+      {/* Tab switcher */}
+      <div className="flex mb-2 border-b md:hidden">
         <button 
           className={`px-4 py-2 ${activeTab === 'pdf' ? 'bg-blue-50 border-b-2 border-blue-500 font-medium' : 'text-gray-500'}`}
           onClick={() => setActiveTab('pdf')}
@@ -121,19 +76,47 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
         </button>
       </div>
       
-      {/* Main container - row on medium+ screens, controlled by tabs on small screens */}
+      {/* Main container */}
       <div className="flex flex-col md:flex-row w-full gap-2 md:gap-4">
         {/* PDF Viewer */}
         <div className={`w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden ${activeTab !== 'pdf' ? 'hidden md:block' : ''}`}>
-          <div className="bg-gray-800 text-white p-2 font-medium">PDF Document</div>
-          {/* Static height container for all devices */}
-          <div className="h-106 md:h-96 lg:h-96"> {/* Fixed height at 24rem (384px) for all screens */}
+          <div className="bg-gray-800 text-white p-2 font-medium flex justify-between items-center">
+            <span>PDF Document</span>
+            {/* PDF controls */}
+            <div className="flex space-x-2">
+              <button 
+                onClick={zoomIn}
+                className="p-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center"
+                title="Zoom In"
+              >
+                <ZoomIn size={16} />
+              </button>
+              <button 
+                onClick={zoomOut}
+                className="p-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center"
+                title="Zoom Out"
+              >
+                <ZoomOut size={16} />
+              </button>
+              <button 
+                onClick={resetZoom}
+                className="p-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center"
+                title="Reset Zoom"
+              >
+                <RotateCw size={16} />
+              </button>
+            </div>
+          </div>
+          
+          {/* PDF Viewer Container with fixed height and mobile optimization */}
+          <div className="h-96 md:h-[calc(100vh-300px)] lg:h-[calc(100vh-250px)] overflow-auto bg-gray-100">
             {pdfUrl ? (
               <iframe
-              src={`${pdfUrl}#view=fit`}
+                src={`${pdfUrl}#view=FitH&toolbar=0&navpanes=0&statusbar=0&zoom=${pdfScale * 100}`}
                 title="PDF Viewer"
-                fittopage="true"
                 className="w-full h-full border-none"
+                loading="lazy"
+                style={{ minHeight: '450px' }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -166,12 +149,17 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
               </button>
             </div>
           </div>
-          {/* Static height container for all devices */}
-          <div className="h-96 md:h-96 lg:h-96 overflow-auto"> {/* Fixed height at 24rem (384px) for all screens */}
+          {/* XML Viewer Container with fixed height to match PDF viewer */}
+          <div className="h-96 md:h-[calc(100vh-300px)] lg:h-[calc(100vh-250px)] overflow-auto">
             {xmlCode ? (
-              <pre className="p-4 text-gray-300 font-mono text-xs sm:text-sm bg-[#1E1E1E] whitespace-pre-wrap">
-                <div dangerouslySetInnerHTML={{ __html: enhancedXmlHighlighting(formatXML(xmlCode)) }} />
-              </pre>
+              <div className="p-4 font-mono text-xs sm:text-sm bg-[#1E1E1E]">
+                <XMLViewer 
+                  xml={xmlCode} 
+                  theme={customTheme}
+                  collapsible={true}
+                  indentSize={2}
+                />
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
                 <p>No XML code provided</p>
@@ -180,30 +168,6 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
           </div>
         </div>
       </div>
-      
-      {/* Optional Resizing Controls - Uncomment if you want manual resizing */}
-      {/*
-      <div className="flex justify-center mt-4 md:hidden">
-        <button 
-          className="px-4 py-2 bg-gray-200 rounded-lg text-sm font-medium"
-          onClick={() => {
-            // Get current viewers and toggle their height class
-            const viewers = document.querySelectorAll('.h-96');
-            viewers.forEach(viewer => {
-              if (viewer.classList.contains('h-96')) {
-                viewer.classList.remove('h-96');
-                viewer.classList.add('h-64'); // Smaller
-              } else {
-                viewer.classList.remove('h-64');
-                viewer.classList.add('h-96'); // Larger
-              }
-            });
-          }}
-        >
-          Resize Viewers
-        </button>
-      </div>
-      */}
     </div>
   );
 };
