@@ -26,6 +26,7 @@ import { BASE_URL } from "@/util/url";
 import { toast } from "sonner";
 import { userLoggedOut } from "@/store/userSlice";
 import axios from "axios";
+import { resetConversions } from "@/store/conversionSlice";
 
 const Navbar = () => {
   const user = useSelector((state) => state.user);
@@ -36,6 +37,7 @@ const Navbar = () => {
     try {
       const response = await axios.get(`${BASE_URL}/user/logout`, { withCredentials: true });
       dispatch(userLoggedOut());
+      dispatch(resetConversions())
       navigate('/auth');
       toast.success(response.data.message);
     } catch (error) {
@@ -77,7 +79,7 @@ const UserMenu = ({ HandleLogout ,user}) => (
               </Avatar>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
-      <Link to="/my-conversion">
+      <Link to="/my-conversions">
         <DropdownMenuLabel>My Conversions</DropdownMenuLabel>
       </Link>
       
@@ -123,7 +125,7 @@ const MobileMenu = ({ user, HandleLogout }) => (
               <span className="font-medium">{user.name}</span>
             </div>
             <nav className="flex flex-col space-y-2">
-              <Link to="/my-conversion" className="py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">My Conversions</Link>
+              <Link to="/my-conversions" className="py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">My Conversions</Link>
               <button onClick={HandleLogout} className="text-left py-2 px-3 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-red-500">
                 <LogOutIcon size={14} /> 
                 Log Out

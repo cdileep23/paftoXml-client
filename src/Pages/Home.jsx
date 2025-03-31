@@ -15,7 +15,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversionObj,setConversion]=useState(null)
   const fileInputRef = useRef(null);
-  const[xml,setXml]=useState(null)
+  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -63,7 +63,7 @@ const Home = () => {
       );
   
       toast.success('File uploaded successfully!', { id: toastId });
-      setXml(response.data.code)
+     
       console.log('Conversion result:', response.data);
       setConversion(response.data.conversion)
       
