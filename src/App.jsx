@@ -6,6 +6,7 @@ import Auth from './Pages/Auth'
 import { Toaster } from './components/ui/sonner'
 import Conversion from './Pages/Conversion'
 import EachConversion from './Pages/EachConversion'
+import Profile from './Pages/Profile'
 
 const appRouter=createBrowserRouter([{
   path:"/",
@@ -22,6 +23,9 @@ const appRouter=createBrowserRouter([{
   },{
     path:"/conversion/:id",
     element:<EachConversion/>
+  },{
+    path:"/profile",
+    element:<Profile/>
   }]
 }])
 

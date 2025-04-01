@@ -55,9 +55,7 @@ const Navbar = () => {
         </Link>
         
         <div className="hidden md:flex items-center gap-8 pr-8">
-          
-            <UserMenu HandleLogout={HandleLogout} user={user} />
-         
+          <UserMenu HandleLogout={HandleLogout} user={user} />
         </div>
         
         <div className="flex md:hidden items-center gap-2 pr-4">
@@ -68,19 +66,22 @@ const Navbar = () => {
   );
 };
 
-const UserMenu = ({ HandleLogout ,user}) => (
+const UserMenu = ({ HandleLogout, user }) => (
   <DropdownMenu>
     <DropdownMenuTrigger>
-    <Avatar>
-                <AvatarFallback>
-                  
-                  {user?.name?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+      <Avatar>
+        <AvatarImage src={user?.PhotoUrl} alt={user?.name || "User"} />
+        <AvatarFallback>
+          {user?.name?.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
       <Link to="/my-conversions">
         <DropdownMenuLabel>My Conversions</DropdownMenuLabel>
+      </Link>
+      <Link to="/profile">
+        <DropdownMenuLabel>Profile</DropdownMenuLabel>
       </Link>
       
       <DropdownMenuItem onClick={HandleLogout} className='flex items-center text-red-600'>
@@ -118,6 +119,7 @@ const MobileMenu = ({ user, HandleLogout }) => (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Avatar>
+                <AvatarImage src={user?.PhotoUrl} alt={user?.name || "User"} />
                 <AvatarFallback>
                   {user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -126,6 +128,8 @@ const MobileMenu = ({ user, HandleLogout }) => (
             </div>
             <nav className="flex flex-col space-y-2">
               <Link to="/my-conversions" className="py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">My Conversions</Link>
+              <Link to="/profile" className="py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">Profile</Link>
+              
               <button onClick={HandleLogout} className="text-left py-2 px-3 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-red-500">
                 <LogOutIcon size={14} /> 
                 Log Out
