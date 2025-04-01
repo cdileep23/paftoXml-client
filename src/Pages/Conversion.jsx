@@ -18,7 +18,7 @@ const Conversion = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Only fetch if conversions is null (not if it's an empty array)
+ 
     if (conversions ) {
       setIsLoading(false)
       return
@@ -109,7 +109,7 @@ const DeleteConversion=async({id})=>{
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Hero Section */}
+  
       <div className="relative overflow-hidden bg-white">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 opacity-80"></div>
         
@@ -128,11 +128,11 @@ const DeleteConversion=async({id})=>{
         </div>
       </div>
       
-      {/* Controls Section */}
+  
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
+       
             <div className="flex-1">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -148,7 +148,7 @@ const DeleteConversion=async({id})=>{
               </div>
             </div>
             
-            {/* Sort */}
+         
             <div className="w-full md:w-auto">
               <div className="flex items-center gap-2">
                 {sortBy === 'newest' ? (
@@ -170,7 +170,7 @@ const DeleteConversion=async({id})=>{
           </div>
         </div>
         
-        {/* Conversions List */}
+      
         {isLoading ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>

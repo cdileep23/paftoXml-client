@@ -8,7 +8,7 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
   const [pdfScale, setPdfScale] = useState(1);
   const containerRef = useRef(null);
 
-  // Custom XML theme for dark mode
+ 
   const customTheme = {
     attributeKeyColor: '#9CDCFE',
     attributeValueColor: '#CE9178',
@@ -22,7 +22,7 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
     processingInstructionValueColor: '#CE9178'
   };
 
-  // Handle copy to clipboard
+  
   const copyToClipboard = () => {
     navigator.clipboard.writeText(xmlCode).then(() => {
       setCopied(true);
@@ -30,7 +30,7 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
     });
   };
 
-  // Handle download XML
+ 
   const downloadXml = () => {
     const element = document.createElement('a');
     const file = new Blob([xmlCode], {type: 'text/xml'});
@@ -41,17 +41,15 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
     document.body.removeChild(element);
   };
 
-  // Zoom in PDF
+
   const zoomIn = () => {
     setPdfScale(prev => Math.min(prev + 0.25, 3));
   };
 
-  // Zoom out PDF
   const zoomOut = () => {
     setPdfScale(prev => Math.max(prev - 0.25, 0.5));
   };
 
-  // Reset zoom
   const resetZoom = () => {
     setPdfScale(1);
   };
@@ -60,7 +58,7 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
     <div className="w-full p-2 md:p-4 bg-gray-100" ref={containerRef}>
       <h2 className="text-xl font-bold mb-2 md:mb-4">Document Viewer</h2>
       
-      {/* Tab switcher */}
+   
       <div className="flex mb-2 border-b md:hidden">
         <button 
           className={`px-4 py-2 ${activeTab === 'pdf' ? 'bg-blue-50 border-b-2 border-blue-500 font-medium' : 'text-gray-500'}`}
@@ -76,13 +74,13 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
         </button>
       </div>
       
-      {/* Main container */}
+     
       <div className="flex flex-col md:flex-row w-full gap-2 md:gap-4">
-        {/* PDF Viewer */}
+       
         <div className={`w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden ${activeTab !== 'pdf' ? 'hidden md:block' : ''}`}>
           <div className="bg-gray-800 text-white p-2 font-medium flex justify-between items-center">
             <span>PDF Document</span>
-            {/* PDF controls */}
+           
             <div className="flex space-x-2">
               <button 
                 onClick={zoomIn}
@@ -108,7 +106,7 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
             </div>
           </div>
           
-          {/* PDF Viewer Container with fixed height and mobile optimization */}
+        
           <div className="h-96 md:h-[calc(100vh-300px)] lg:h-[calc(100vh-250px)] overflow-auto bg-gray-100">
             {pdfUrl ? (
               <iframe
@@ -126,7 +124,6 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
           </div>
         </div>
 
-        {/* XML Viewer */}
         <div className={`w-full md:w-1/2 bg-gray-900 rounded-lg shadow-md overflow-hidden ${activeTab !== 'xml' ? 'hidden md:block' : ''}`}>
           <div className="bg-gray-800 text-white p-2 font-medium flex justify-between items-center">
             <span>XML Code</span>
@@ -149,7 +146,7 @@ const PDFXMLViewer = ({ pdfUrl, xmlCode, fileName = "document" }) => {
               </button>
             </div>
           </div>
-          {/* XML Viewer Container with fixed height to match PDF viewer */}
+         
           <div className="h-96 md:h-[calc(100vh-300px)] lg:h-[calc(100vh-250px)] overflow-auto">
             {xmlCode ? (
               <div className="p-4 font-mono text-xs sm:text-sm bg-[#1E1E1E]">

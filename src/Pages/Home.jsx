@@ -76,21 +76,21 @@ const Home = () => {
     } catch (error) {
       console.error("Upload failed:", error);
       
-      // Clear selection on error
+    
       clearSelectedFile();
       
       if (error.response) {
-        // Server responded with an error status (4xx, 5xx)
+     
         const errorMessage = error.response.data?.message || 
                            "An error occurred during conversion";
         toast.error(errorMessage, { id: toastId });
       } else if (error.request) {
-        // Request was made but no response received
+       
         toast.error("Network error - please check your connection and try again", { 
           id: toastId 
         });
       } else {
-        // Something happened in setting up the request
+       
         toast.error("Internal server error - please upload and try again", { 
           id: toastId 
         });

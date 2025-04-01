@@ -26,7 +26,7 @@ const Profile = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Create preview URL
+    
       setPreviewUrl(URL.createObjectURL(selectedFile));
     }
   };
@@ -41,11 +41,11 @@ const Profile = () => {
       const data = new FormData();
       data.append('name', formData.name);
       
-      // Get the file from the input directly
+   
       const file = fileInputRef.current?.files[0];
       if (file) {
         data.append('photo', file);
-        console.log('File being sent:', file); // Debug log
+        console.log('File being sent:', file); 
       }
 
       const response = await axios.put(`${BASE_URL}/user/profile`, data, {
@@ -60,7 +60,7 @@ const Profile = () => {
         dispatch(userLoggedIn(response.data.user));
         toast.success('Profile updated successfully!', { id: toastId });
         
-        // Reset file input after successful upload
+      
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -102,7 +102,7 @@ const Profile = () => {
             onChange={handleFileChange}
             className="w-full p-2 border rounded"
             accept="image/*"
-            name="photo" // Add name attribute
+            name="photo"
           />
         </div>
         

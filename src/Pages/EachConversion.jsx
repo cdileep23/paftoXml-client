@@ -54,7 +54,7 @@ const EachConversion = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Header */}
+   
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center">
@@ -72,7 +72,7 @@ const EachConversion = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+    
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {loading ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
@@ -95,7 +95,7 @@ const EachConversion = () => {
           </div>
         ) : conversion ? (
           <div className="grid grid-cols-1 gap-6">
-            {/* Conversion Info Card */}
+      
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4">
                 <h2 className="text-white text-lg font-semibold">Conversion Details</h2>
@@ -149,7 +149,7 @@ const EachConversion = () => {
               </div>
             </div>
             
-            {/* PDF & XML Viewer */}
+        
             <PDFXMLViewer 
               pdfUrl={conversion.pdfLink} 
               xmlCode={conversion.xmlContent}
