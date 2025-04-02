@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { BASE_URL } from '@/util/url';
@@ -11,10 +11,22 @@ const Profile = () => {
   const fileInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    name: '',
   });
-  const [previewUrl, setPreviewUrl] = useState(user.PhotoUrl );
-  const [loading, setLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [loading, setLoading] = useState(true); // Start with loading true
+  const [updating, setUpdating] = useState(false);
+
+  // Initialize form data when user is available
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user?.name || '',
+      });
+      setPreviewUrl(user.PhotoUrl || '');
+      setLoading(false);
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({
@@ -26,32 +38,29 @@ const Profile = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-    
       setPreviewUrl(URL.createObjectURL(selectedFile));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!user) return; // Guard clause
     
+    setUpdating(true);
     const toastId = toast.loading('Updating profile...');
     
     try {
       const data = new FormData();
       data.append('name', formData.name);
       
-   
       const file = fileInputRef.current?.files[0];
       if (file) {
         data.append('photo', file);
-        console.log('File being sent:', file); 
       }
 
       const response = await axios.put(`${BASE_URL}/user/profile`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          
         },
         withCredentials: true
       });
@@ -60,7 +69,6 @@ const Profile = () => {
         dispatch(userLoggedIn(response.data.user));
         toast.success('Profile updated successfully!', { id: toastId });
         
-      
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -69,14 +77,27 @@ const Profile = () => {
       console.error('Update error:', error);
       toast.error(error.response?.data?.message || 'Failed to update profile', { id: toastId });
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   if (!user) {
-    return <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-    </div>;
+    return (
+      <div className="max-w-md mx-auto p-4">
+        <h1 className="text-xl font-bold mb-4">Profile</h1>
+        <div className="text-center py-8">
+          <p>You need to be logged in to view this page.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -134,10 +155,10 @@ const Profile = () => {
         
         <button
           type="submit"
-          disabled={loading}
+          disabled={updating}
           className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:opacity-70 transition-all"
         >
-          {loading ? 'Saving...' : 'Save Changes'}
+          {updating ? 'Saving...' : 'Save Changes'}
         </button>
       </form>
     </div>

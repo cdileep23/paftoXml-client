@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, X, ArrowRight, Code } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -13,16 +13,21 @@ import { toast } from "sonner";
 import axios from "axios";
 import { BASE_URL } from "@/util/url";
 import PDFXMLViewer from "./PDFXMLViewer";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { resetConversions } from "@/store/conversionSlice";
+import { io } from "socket.io-client";
 
 const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileObjectURL, setFileObjectURL] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [conversionObj, setConversion] = useState(null);
-  const fileInputRef = useRef(null);
+  
+  const [socket, setSocket] = useState(null);
+  const fileInputRef = React.useRef(null);
+  const [progress, setProgress] = useState({ message: "", percentage: 0 });
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -52,9 +57,27 @@ const Home = () => {
 
     setIsLoading(true);
     setConversion(null);
-    const toastId = toast.loading("Processing your file...");
+    setProgress({ message: "Starting conversion...", percentage: 0 });
 
     try {
+      const newSocket = new io('http://localhost:4545');
+      setSocket(newSocket);
+      
+      newSocket.on('connect', () => {
+        newSocket.emit('join-room', user._id);
+      });
+
+      newSocket.on('send_update', (data) => {
+        setProgress({
+          message: data.message,
+          percentage: data.percentage || progress.percentage 
+        });
+      });
+
+      newSocket.on('conversion_completed', () => {
+        setProgress({ message: "Finalizing conversion...", percentage: 100 });
+      });
+
       const formData = new FormData();
       formData.append("pdfFile", selectedFile);
 
@@ -69,34 +92,31 @@ const Home = () => {
         }
       );
 
-      toast.success("Conversion successful!", { id: toastId });
+      toast.success("Conversion successful!");
       dispatch(resetConversions());
       setConversion(response.data.conversion);
-      clearSelectedFile();
+    
     } catch (error) {
       console.error("Upload failed:", error);
-      
-    
-      clearSelectedFile();
+  
       
       if (error.response) {
-     
         const errorMessage = error.response.data?.message || 
                            "An error occurred during conversion";
-        toast.error(errorMessage, { id: toastId });
+        toast.error(errorMessage);
       } else if (error.request) {
-       
-        toast.error("Network error - please check your connection and try again", { 
-          id: toastId 
-        });
+        toast.error("Network error - please check your connection and try again");
       } else {
-       
-        toast.error("Internal server error - please upload and try again", { 
-          id: toastId 
-        });
+        toast.error("Internal server error - please upload and try again");
       }
     } finally {
       setIsLoading(false);
+      clearSelectedFile();
+      setProgress({ message: "", percentage: 0 });
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+      }
     }
   };
 
@@ -110,6 +130,15 @@ const Home = () => {
       fileInputRef.current.value = "";
     }
   };
+
+ 
+  useEffect(() => {
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [socket]);
 
   return (
     <div className="container mx-auto px-4">
@@ -169,7 +198,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div>
+        <div className="flex flex-col items-center gap-4">
           <Button 
             onClick={handleUpload} 
             variant="outline" 
@@ -177,6 +206,21 @@ const Home = () => {
           >
             {isLoading ? "Processing..." : "Generate"}
           </Button>
+
+          {progress.message && (
+          <div className="w-full max-w-lg space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+            <span>{progress.message}</span>
+            <span style={{ marginLeft: '8px' }}>{progress.percentage}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div 
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out" 
+                style={{ width: `${progress.percentage}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
         </div>
       </div>
       
@@ -192,7 +236,6 @@ const Home = () => {
 };
 
 export default Home;
-
 
 const HeroSection = () => {
   return (
