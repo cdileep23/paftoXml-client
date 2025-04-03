@@ -1,5 +1,5 @@
 import { Menu, LibraryBig, LogOutIcon } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -66,31 +66,43 @@ const Navbar = () => {
   );
 };
 
-const UserMenu = ({ HandleLogout, user }) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger>
-      <Avatar>
-        <AvatarImage src={user?.PhotoUrl} alt={user?.name || "User"} />
-        <AvatarFallback>
-          {user?.name?.charAt(0).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent>
-      <Link to="/my-conversions">
-        <DropdownMenuLabel>My Conversions</DropdownMenuLabel>
-      </Link>
-      <Link to="/profile">
-        <DropdownMenuLabel>Profile</DropdownMenuLabel>
-      </Link>
-      
-      <DropdownMenuItem onClick={HandleLogout} className='flex items-center text-red-600'>
-        <LogOutIcon color="red" size={12} className="mr-2" />
-        Log Out
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
+const UserMenu = ({ HandleLogout, user }) => {
+  const [open, setOpen] = useState(false);
+  
+  const handleDropdownItemClick = (callback) => {
+    setOpen(false);
+    if (callback) callback();
+  };
+  
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger>
+        <Avatar>
+          <AvatarImage src={user?.PhotoUrl} alt={user?.name || "User"} />
+          <AvatarFallback>
+            {user?.name?.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <Link to="/my-conversions" onClick={() => setOpen(false)}>
+          <DropdownMenuLabel>My Conversions</DropdownMenuLabel>
+        </Link>
+        <Link to="/profile" onClick={() => setOpen(false)}>
+          <DropdownMenuLabel>Profile</DropdownMenuLabel>
+        </Link>
+        
+        <DropdownMenuItem 
+          onClick={() => handleDropdownItemClick(HandleLogout)} 
+          className='flex items-center text-red-600'
+        >
+          <LogOutIcon color="red" size={12} className="mr-2" />
+          Log Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 const AuthButtons = () => (
   <div className="flex items-center gap-3">

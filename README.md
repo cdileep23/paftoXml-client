@@ -1,3 +1,16 @@
+BACKEND GITHUB URL:
+https://github.com/cdileep23/pdfToXml-server
+
+
+Sample Credentials:
+
+test1@gmail.com
+Test@123
+
+test2@gmail.com
+Test@123
+
+
 Frontend Project Setup Instructions
 
 

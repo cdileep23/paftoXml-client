@@ -178,7 +178,7 @@ const Home = () => {
                     <div className="flex-1 min-h-0">
                       <iframe
                         src={fileObjectURL}
-                        className="w-full h-full"
+                        className="w-full h-100"
                         title="PDF Preview"
                       />
                     </div>
